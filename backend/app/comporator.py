@@ -8,7 +8,7 @@ class Comparator:
         self.track_data = track_data
         self.track_dict = track_dict
         self.tolerance = timedelta(seconds=tolerance_sec)
-        slef.tolerance_distance = tolerance_distance
+        self.tolerance_distance = tolerance_distance
         self.updatetime_distance = updatetime_distance
         self.heading_threshold = heading_threshold
         self.last_utc_time = None

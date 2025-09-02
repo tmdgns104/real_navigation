@@ -79,38 +79,39 @@ def get_next_data(self):
         GPRMC_speed_knots = GPRMC_msg.spd_over_grnd
 
 
-if GPGGA_is_find:
-    current_GPGGA_line = GPGGA_last_line
-    GPGGA_msg = pynmea2.parse(GPGGA_last_line)
-    current_lat = GPGGA_msg.latitude
-    current_lon = GPGGA_msg.longitude
-    utc_time = GPGGA_msg.timestamp
-    GPGGA_gps_quality = GPGGA_msg.gps_qual
-    GPGGA_num_sats = GPGGA_msg.num_sats
-    GPGGA_altitude = GPGGA_msg.altitude
+    if GPGGA_is_find:
+        current_GPGGA_line = GPGGA_last_line
+        GPGGA_msg = pynmea2.parse(GPGGA_last_line)
+        current_lat = GPGGA_msg.latitude
+        current_lon = GPGGA_msg.longitude
+        utc_time = GPGGA_msg.timestamp
+        GPGGA_gps_quality = GPGGA_msg.gps_qual
+        GPGGA_num_sats = GPGGA_msg.num_sats
+        GPGGA_altitude = GPGGA_msg.altitude
 
-if utf_tume =None and current_lat == 0 and current_lon == 0:
-    current_lon = None
-    current_lat = None
-if utc_time:
-    utc_time_db = datetime.dstetime.combine(dstetime.date.today(), utc_time)
-else:
-    utc_time_db = None
-result = {
-    "real_time": datetime.datetime.now(),
-    "timestamp": utc_time,
-    "timestamp_db": utc_time_db,
-    "latitude": current_lat
-    "longitude": current_lon,
-    "spd_over_gnd": GPVTG_speed_kmh,
-    "true_course": heading,
-    "current_GPGGA_line": current_GPGGA_line,
-    "current_GPRMC_line": current_GPRMC_line,
-    "current_GPVTG_line": current_GPVTG_line,
-    "current_GPGSA_line": current_GPGSA_line,
-    "current_GPGSV_line": current_GPGSV_line,
-}
-return result
+    if utc_time = None and current_lat == 0 and current_lon == 0 :
+        current_lon = None
+        current_lat = None
+
+    if utc_time:
+        utc_time_db = datetime.dstetime.combine(dstetime.date.today(), utc_time)
+    else:
+        utc_time_db = None
+    result = {
+        "real_time": datetime.datetime.now(),
+        "timestamp": utc_time,
+        "timestamp_db": utc_time_db,
+        "latitude": current_lat,
+        "longitude": current_lon,
+        "spd_over_gnd": GPVTG_speed_kmh,
+        "true_course": heading,
+        "current_GPGGA_line": current_GPGGA_line,
+        "current_GPRMC_line": current_GPRMC_line,
+        "current_GPVTG_line": current_GPVTG_line,
+        "current_GPGSA_line": current_GPGSA_line,
+        "current_GPGSV_line": current_GPGSV_line,
+    }
+    return result
 
 
 def get_current_timestamp(self):
