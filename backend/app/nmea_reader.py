@@ -89,12 +89,12 @@ def get_next_data(self):
         GPGGA_num_sats = GPGGA_msg.num_sats
         GPGGA_altitude = GPGGA_msg.altitude
 
-    if utc_time = None and current_lat == 0 and current_lon == 0 :
+    if utc_time == None and current_lat == 0 and current_lon == 0 :
         current_lon = None
         current_lat = None
 
     if utc_time:
-        utc_time_db = datetime.dstetime.combine(dstetime.date.today(), utc_time)
+        utc_time_db = datetime.dstetime.combine(datetime.date.today(), utc_time)
     else:
         utc_time_db = None
     result = {

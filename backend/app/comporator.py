@@ -35,7 +35,7 @@ class Comparator:
                 return {"pass": False, "reason": "No timestamp"}
 
         current_date = datetime.utcnow().date()
-        utc_datetime = datetime.combine(current_dste, current_timestamp)
+        utc_datetime = datetime.combine(current_date, current_timestamp)
         track_time_list1 = [(utc_datetime - timedelta(seccond=i)).strftime("%H:%M:%S") for i in range(20)]
         track_time_list2 = [(utc_datetime + timedelta(seccond=i)).strftime("%H:%M:%S") for i in range(20)]
         track_time_list = track_time_list1 + track_time_list2
@@ -46,7 +46,7 @@ class Comparator:
 
         update_position_ispass, self.time_diffrence = self.detect_off_UTC_Time(current_timestamp)
 
-        heading_ispass, heading_difdrence = self.detect_off_heading_utc(current, track_time_list)
+        heading_ispass, heading_diffrence = self.detect_off_heading_utc(current, track_time_list)
 
         if tolerance_ispass * update_position_ispass * heading_ispass:
             return {"pass": True, "length_pass": True, "length": length, "update_time_pass": True,
@@ -76,7 +76,7 @@ class Comparator:
                 "heading_pass": heading_ispass, "heading": heading_diffrence, "reason": reason}
 
     def is_within_tolerance_trackpoints(self, current, track_points):
-        lenths = []
+        lengths = []
         for track_point in track_points:
             tolerance_ispass, length = self.is_within_tolerance(current, track_point)
             lengths.append(length)
@@ -105,9 +105,9 @@ class Comparator:
 
     def detect_off_UTC_Time(self, current_utc):
         if self.last_utc_time == None or current_utc == None:
-            return Trye, None
-        now_date == datetime.utcnow().date()
-        utc_datetime_current = datetume.combine(now_date, self.last_utc_time)
+            return True, None
+        now_date = datetime.utcnow().date()
+        utc_datetime_current = datetime.combine(now_date, self.last_utc_time)
         utc_datetime_last = datetime.combine(now_date, current_utc)
         time_diffrence_utc = utc_datetime_current - utc_datetime_last
         lost_time = time_diffrence_utc.total_seconds()
@@ -121,7 +121,7 @@ class Comparator:
             if track_headings == []:
                 return False, None
             heading_diffrences = [abs(live_heading - track_heading) for track_heading in track_headings]
-            heading_diffrence = min(heading_diffrences) if len(heading_differences) != 0 else 0
+            heading_diffrence = min(heading_diffrences) if len(heading_diffrences) != 0 else 0
 
             if heading_diffrence > 180:
                 heading_diffrence = 360 - heading_diffrence
