@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Real Navigation</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style> #map{height:100vh;} .hud{position:absolute;top:10px;left:10px;background:#fff;padding:8px;border-radius:8px;} </style>
+</head>
+<body>
+<div id="map"></div>
+<div class="hud"><span id="info">loading…</span></div>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([37.5665, 126.9780], 13); // default: Seoul
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).addTo(map);
+  let marker = null; let trail = [];
+
+  async function poll(){
+    try{
+      const r = await fetch('/current');
+      const j = await r.json();
+      if(!j.ok || j.lat==null || j.lon==null){ return; }
+      const latlng = [j.lat, j.lon];
+      if(!marker){
+        marker = L.marker(latlng).addTo(map);
+        map.setView(latlng, 16);
+      }else{
+        marker.setLatLng(latlng);
+      }
+      trail.push(latlng);
+      if(trail.length>1){ L.polyline(trail.slice(-2)).addTo(map); }
+      document.getElementById('info').textContent =
+        `TS:${j.ts}  Lat:${j.lat?.toFixed(6)}  Lon:${j.lon?.toFixed(6)}  `+
+        `Speed:${(j.speed_kmh??0).toFixed(1)}km/h  Heading:${j.heading_deg??"-"}`;
+    }catch(e){}
+  }
+  setInterval(poll, 1000);
+</script>
+</body>
+</html>
