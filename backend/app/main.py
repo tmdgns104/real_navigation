@@ -97,7 +97,7 @@ def get_next_location():
             "longitude": data.get("longitude"),
             "spd_over_grnd": data.get("spd_over_grnd"),
             "true_course": data.get("true_course"),
-            "pass": comparison.get("pass", True)
+            "pass": comparison.get("pass", True),
             "reason": comparison.get("reason", '-'),
             "cycle": total_cycle
         }
@@ -116,7 +116,7 @@ def get_next_location():
             "curremt_GPVTG_line": data.get("curremt_GPVTG_line"),
             "curremt_GPGSA_line": data.get("curremt_GPGSA_line"),
             "curremt_GPGSV_line": data.get("curremt_GPGSV_line"),
-            "pass": comparison.get("pass", True)
+            "pass": comparison.get("pass", True),
             "reason": comparison.get("reason", '-'),
             "cycle": total_cycle
         }
