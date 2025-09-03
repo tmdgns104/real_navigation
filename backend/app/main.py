@@ -59,11 +59,10 @@ def get_next_location():
             if data.get("timestamp").replace(microsecond=0) >= track_reader.track_data[-1].get("timestamp").replace(
                     microsecond=0):
                 print("Labset이 준비중입니다")
-                return {"current": dats, "comparison": comparsion, "cycle": total_cycle}
+                return {"current": data, "comparison": comparison, "cycle": total_cycle}
             print(f"{total_cycle} 바퀴 진행중입니다.")
             if comparator.last_utc_time != None and data.get("timestamp") is not None:
-                if comparator.time_diffrence != None and comparator.time_diffrence >= 0 and data[
-                    "timestamp"] != None data["latitude"] != None:
+                if comparator.time_diffrence != None and comparator.time_diffrence >= 0 and data["timestamp"] != None and data["latitude"] != None:
                     print(comparator.time_diffrence)
                     reset_trigger = 0
                 else:
@@ -83,7 +82,7 @@ def get_next_location():
             session_results["start_time"] = str(data["timestamp"])
         session_results["total_count"] += 1
 
-        if not comparsion["pass"]:
+        if not comparison["pass"]:
             session_results["failures"].append({
                 "current": data,
                 "reason": comparison["reason"]

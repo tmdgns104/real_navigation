@@ -2,20 +2,58 @@
 <html>
 <head>
   <title>Navigation Map</title>
-  <meta charset="utf-8" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <meta charset='utf-8' />
+  <link rel="stylesheat" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-    #map { height: 100vh; }
+  #map{
+    height: 90vh;
+  }
+
+  #info-panel {
+    position:fixed;
+    bottom:0;
+    left: 0;
+    width: 100%;
+    background: #f8f8fc;
+    dispaly: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 10px 20px;
+    border-top: 1px solid #ccc;
+    front-family: 'Segoe UI', sans-self;
+    z-index: 1000;
+  }
+
+
   </style>
+
 </head>
 <body>
-  <button id="start-btn">주행 시작</button>
-  <div id="map">
-
-  </div>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <button id ="start-Backend-btn" onclick="start_Backend()">주행 시작</button>
+  <button id ="stop-Backend-btn" onclick="stop_Backend()">주행 종료</button>
+  <button id ="show-stop-btn" onclick="currentLoopOnOff(false)">시각화 일시 정지</button>
+  <button id ="show-start-btn" onclick="currentLoopOnOff(true)">시각화 다시 시작</button>
+  <button id ="save-btn">레포트 저장</button>
+  <div id ="map"></div>
+  <script src="https://upkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="/static/js/map.js"></script>
-</body>
 
+  <div id="info-panel">
+    <div class="info-card">
+      <div><strong>시간</strong><span id="info-time">-</span></div>
+      <div><strong>위도</strong><span id="info-lat">-</span></div>
+      <div><strong>경도</strong><span id="info-lon">-</span></div>
+    </div>
+    <div class="info-card">
+      <div><strong>속도</strong><span id="info-speed">-</span></div>
+      <div><strong>헤딩</strong><span id="info-heading">-</span></div>
+    </div>
+     <div class="info-card result-card">
+      <div><strong>결과</strong><span id="info-result">-</span></div>
+      <div><strong>이유</strong><span id="info-reason">-</span></div>
+    </div>
+ </div>
+</body>
 </html>
+
+
