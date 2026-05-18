@@ -1,35 +1,43 @@
+from datetime import datetime
+from pathlib import Path
+
 import folium
-import datetime
-import os
 
 
-def make_cycle_folium(track_data, failures, path, Cycle_count, name):
-    track_list = []
-    for i in range(len(track_data)):
-        track_list.append((track_data[i]["latitude"], track_data[i]["longitude"]))
-    fail_list = []
-    fail_message_list = []
-    for i in range(len(failures)):
-        if failures[i]["latitude"] != None and failures[i]["longitude"] != None:
-            fail_list.append((failures[i]["latitude"], failures[i]["longitude"]))
-            fail_message_list.append(failuers[i]["reason"])
-        path_list = []
-    for i in range(len(path)):
-        if path[i]["latitude"] != None and path[i]["longitude"] != None:
-            path_list.append((path[i]["latitude"], path[i]["longitude"]))
+def make_cycle_folium(track_data, failures, path, cycle_count, name):
+    track_list = [
+        (item["latitude"], item["longitude"])
+        for item in track_data
+        if item.get("latitude") is not None and item.get("longitude") is not None
+    ]
+    path_list = [
+        (item["latitude"], item["longitude"])
+        for item in path
+        if item.get("latitude") is not None and item.get("longitude") is not None
+    ]
+    fail_items = [
+        item
+        for item in failures
+        if item.get("latitude") is not None and item.get("longitude") is not None
+    ]
 
-    m = folium.Map(location=track_list[0], zoom_start=12)
-    folium.Polyline(track_list, color='blue', weight=20, opacity=0.7, tooltip=f"track", ).add_to(m)
-    time = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    if len(path_list) != 0:
-        folium.PolyLine(path_list, color='green', weight=20, opacity=0.7, tooltip=f"track", ).add_to(m)
-    for i in range(len(fail_list)):
-        point = fail_list[i]
-        message = fail_message_list[i]
-        folium.Marker(point, popup=message, icon=folium.Icon(color="red")).add_to(m)
-    if not os.path.exists(".\\track_comparsion"):
-        os.makedirs(".\\track_comparsion")
-    m.save(f'.\\track_comparison\\track_{name}_{Cycle_count}_{time}.html')
-    return f'.\\track_comparison\\track_{name}_{Cycle_count}_{time}.html'
+    center = path_list[0] if path_list else track_list[0] if track_list else (37.5, 127.0)
+    m = folium.Map(location=center, zoom_start=12)
 
+    if track_list:
+        folium.PolyLine(track_list, color="blue", weight=8, opacity=0.7, tooltip="reference track").add_to(m)
+    if path_list:
+        folium.PolyLine(path_list, color="green", weight=8, opacity=0.7, tooltip="driving path").add_to(m)
+    for item in fail_items:
+        folium.Marker(
+            (item["latitude"], item["longitude"]),
+            popup=item.get("reason", "-"),
+            icon=folium.Icon(color="red"),
+        ).add_to(m)
 
+    output_dir = Path("track_comparison")
+    output_dir.mkdir(exist_ok=True)
+    timestamp = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    output_path = output_dir / f"track_{name}_{cycle_count}_{timestamp}.html"
+    m.save(output_path)
+    return str(output_path)

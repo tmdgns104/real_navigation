@@ -1,118 +1,106 @@
-import datetime
-import os
+from datetime import date, datetime
+from pathlib import Path
+
 import pynmea2
 
 
 class NMEAReader:
-    def __init__(self):
-        self.file_path = r"../nmea/sample.nmea"
-        if not os.path.exists(self.file_path):
+    VALID_MODES = {"replay", "live"}
+
+    def __init__(self, file_path=None, mode="replay"):
+        base_dir = Path(__file__).resolve().parents[1]
+        self.file_path = Path(file_path) if file_path else base_dir / "nmea" / "Sample.nmea"
+        if not self.file_path.exists():
             raise FileNotFoundError(f"{self.file_path} not found")
-        self.file = open(self.file_path, 'r')
+        self.mode = mode if mode in self.VALID_MODES else "replay"
+        self.lines = self._read_lines()
+        self.index = 0
+        self.last_timestamp = None
 
-    def file_nmea_in_log_reverse(self, file_path, target):
-        with open(file_path, 'rb') as f:
-            f.seek(0, 2)
-            buffer = bytearray()
-            file_size = f.tell()
-            while file_size > 0:
-                read_size = min(1024, file_size)
-                file_size -= read_size
-                f.seek(file_size)
-                chunk = f.read(read_size)
-                buffer = chunk + buffer
-                while b'\n' in buffer:
-                    last_newline = buffer.rindex(b'\n')
-                    line = buffer[last_newline + 1:].strip()
-                    buffer = buffer[:last_newline]
-                    if line.startswith(b'$') and target.encode() in line:
-                        return line.decode(), True
-            if buffer:
-                line = buffer.strip()
-                if line.startswith(b"$") and target.encode() in line:
-                    return line.decode()
-        return None, False
+    def _read_lines(self):
+        return [
+            line.strip()
+            for line in self.file_path.read_text(encoding="utf-8").splitlines()
+            if line.strip().startswith("$")
+        ]
 
+    def reset(self):
+        self.lines = self._read_lines()
+        self.index = 0
+        self.last_timestamp = None
 
-def get_next_data(self):
-    import time
+    def set_mode(self, mode):
+        if mode not in self.VALID_MODES:
+            raise ValueError(f"mode must be one of {sorted(self.VALID_MODES)}")
+        self.mode = mode
+        self.reset()
 
-    GPGGA_last_line, GPGGA_is_find = self.find_nmea_in_log_reverse(self.file_path, '$GPGGA')
-    GPRMC_last_line, GPRMC_is_find = self.find_nmea_in_log_reverse(self.file_path, '$GPRMC')
-    GPVTG_last_line, GPVTG_is_find = self.find_nmea_in_log_reverse(self.file_path, '$GPVTG')
-    GPGSA_last_line, GPGSA_is_find = self.find_nmea_in_log_reverse(self.file_path, '$GPGSA')
-    GPGSV_last_line, GPGSV_is_find = self.find_nmea_in_log_reverse(self.file_path, '$GPGSV')
+    def _parse(self, line):
+        sentence = line.split("*", 1)[0]
+        return pynmea2.parse(sentence)
 
-    if GPGSV_is_find:
-        current_GPGSV_line = GPGSV_last_line
-        GPGSV_msg = pynmea2.parse(GPGSV_last_line)
-        GPGSV_num_sv_in_view = GPGSV_msg.num_sv_in_view
-        GPGSV_sv_prn_num = [GPGSV_msg.sv_prn_num_1, GPGSV_msg.sv_prn_num_2, GPGSV_msg.sv_prn_num_3,
-                            GPGSV_msg.sv_prn_num_4]
-        GPGSV_elevation = [GPGSV_msg.elevation_deg_1, GPGSV_msg.elevation_deg_2, GPGSV_msg.elevation_deg_3,
-                           GPGSV_msg.elevation_deg_4]
-        GPGSV_snr = [GPGSV_msg.snr_1, GPGSV_msg.snr_2, GPGSV_msg.snr_3, GPGSV_msg.snr_4]
+    def _normalize_message(self, line, msg):
+        latitude = getattr(msg, "latitude", None) or None
+        longitude = getattr(msg, "longitude", None) or None
+        timestamp = getattr(msg, "timestamp", None)
+        speed_knots = getattr(msg, "spd_over_grnd", None)
+        speed_kmh = float(speed_knots) * 1.852 if speed_knots not in (None, "") else None
+        true_course = getattr(msg, "true_course", None)
+        true_course = float(true_course) if true_course not in (None, "") else None
 
-    if GPGSA_is_find:
-        current_GPGSA_line = GPGSA_last_line
-        GPGSA_msg = pynmea2.parse(GPGSA_last_line)
-        GPGSA_mode = GPGSA_msg.mode
-        GPGSA_pdop = GPGSA_msg.pdop
-        GPGSA_hdop = GPGSA_msg.hdop
-        GPGSA_vdop = GPGSA_msg.vdop
+        timestamp_db = datetime.combine(date.today(), timestamp) if timestamp else None
+        self.last_timestamp = timestamp
 
-    if GPVTG_is_find:
-        current_GPVTG_line = GPVTG_last_line
-        GPVTG_msg = pynmea2.parse(GPVTG_last_line)
-        GPVTG_speed_kmh = GPVTG_msg.spd_over_gnd_kmph
-        GPVTG_track_true = GPVTG_msg.true_track
-        GPVTG_track_magnetic = GPVTG_msg.msg_track
-        GPVTG_speed_knots = GPVTG_msg.spd_over_grnd_kts
-    if GPRMC_is_find:
-        current_GPRMC_line = GPRMC_last_line
-        GPRMC_msg = pynmea2.parse(GPRMC_last_line)
-        GPRMC_utc_time = GPRMC_msg.timestamp
-        heading = GPRMC_msg.true_course
-        GPRMC_status = GPRMC_msg.status
-        GPRMC_latitude = GPRMC_msg.latitude
-        GPRMC_longitude = GPRMC_msg.longitude
-        GPRMC_speed_knots = GPRMC_msg.spd_over_grnd
+        return {
+            "real_time": datetime.now(),
+            "timestamp": timestamp,
+            "timestamp_db": timestamp_db,
+            "latitude": latitude,
+            "longitude": longitude,
+            "spd_over_grnd": speed_kmh,
+            "true_course": true_course,
+            "current_GPGGA_line": line if msg.sentence_type == "GGA" else None,
+            "current_GPRMC_line": line if msg.sentence_type == "RMC" else None,
+            "current_GPVTG_line": line if msg.sentence_type == "VTG" else None,
+            "current_GPGSA_line": line if msg.sentence_type == "GSA" else None,
+            "current_GPGSV_line": line if msg.sentence_type == "GSV" else None,
+            "mode": self.mode,
+        }
 
+    def get_replay_data(self):
+        if not self.lines:
+            return None
 
-    if GPGGA_is_find:
-        current_GPGGA_line = GPGGA_last_line
-        GPGGA_msg = pynmea2.parse(GPGGA_last_line)
-        current_lat = GPGGA_msg.latitude
-        current_lon = GPGGA_msg.longitude
-        utc_time = GPGGA_msg.timestamp
-        GPGGA_gps_quality = GPGGA_msg.gps_qual
-        GPGGA_num_sats = GPGGA_msg.num_sats
-        GPGGA_altitude = GPGGA_msg.altitude
+        is_cycle_end = self.index == len(self.lines) - 1
+        line = self.lines[self.index]
+        self.index = (self.index + 1) % len(self.lines)
 
-    if utc_time == None and current_lat == 0 and current_lon == 0 :
-        current_lon = None
-        current_lat = None
+        try:
+            msg = self._parse(line)
+        except pynmea2.ParseError:
+            return None
 
-    if utc_time:
-        utc_time_db = datetime.dstetime.combine(datetime.date.today(), utc_time)
-    else:
-        utc_time_db = None
-    result = {
-        "real_time": datetime.datetime.now(),
-        "timestamp": utc_time,
-        "timestamp_db": utc_time_db,
-        "latitude": current_lat,
-        "longitude": current_lon,
-        "spd_over_gnd": GPVTG_speed_kmh,
-        "true_course": heading,
-        "current_GPGGA_line": current_GPGGA_line,
-        "current_GPRMC_line": current_GPRMC_line,
-        "current_GPVTG_line": current_GPVTG_line,
-        "current_GPGSA_line": current_GPGSA_line,
-        "current_GPGSV_line": current_GPGSV_line,
-    }
-    return result
+        data = self._normalize_message(line, msg)
+        data["cycle_completed"] = is_cycle_end
+        return data
 
+    def get_latest_data(self):
+        self.lines = self._read_lines()
+        for line in reversed(self.lines):
+            try:
+                msg = self._parse(line)
+            except pynmea2.ParseError:
+                continue
+            if msg.sentence_type in {"RMC", "GGA", "VTG"}:
+                data = self._normalize_message(line, msg)
+                data["cycle_completed"] = False
+                return data
+        return None
 
-def get_current_timestamp(self):
-    return getattr(self, "last_timestamp", None)
+    def get_next_data(self):
+        if self.mode == "live":
+            return self.get_latest_data()
+        return self.get_replay_data()
+
+    def get_current_timestamp(self):
+        return self.last_timestamp

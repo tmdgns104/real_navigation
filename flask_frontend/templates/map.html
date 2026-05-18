@@ -1,42 +1,117 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
   <title>Navigation Map</title>
-  <meta charset='utf-8' />
-  <link rel="stylesheat" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
-  #map{
-    height: 90vh;
-  }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Malgun Gothic", sans-serif;
+      color: #243447;
+    }
 
-  #info-panel {
-    position:fixed;
-    bottom:0;
-    left: 0;
-    width: 100%;
-    background: #f8f8fc;
-    dispaly: flex;
-    justify-content: center;
-    gap: 30px;
-    padding: 10px 20px;
-    border-top: 1px solid #ccc;
-    front-family: 'Segoe UI', sans-self;
-    z-index: 1000;
-  }
+    #toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: #123047;
+      color: white;
+      flex-wrap: wrap;
+    }
 
+    label {
+      font-size: 14px;
+      font-weight: 700;
+    }
 
+    select {
+      border: 0;
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: white;
+      color: #243447;
+      font-weight: 700;
+    }
+
+    button {
+      border: 0;
+      border-radius: 6px;
+      padding: 8px 12px;
+      background: #eaf5ff;
+      color: #0f4c81;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #eef2f6;
+      color: #243447;
+    }
+
+    #mode-status {
+      margin-left: auto;
+      font-size: 13px;
+      color: #d7e6f5;
+    }
+
+    #map {
+      height: calc(100vh - 150px);
+      width: 100%;
+    }
+
+    #info-panel {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      min-height: 78px;
+      padding: 10px 20px;
+      border-top: 1px solid #d7dee8;
+      background: #f7f9fc;
+      box-sizing: border-box;
+    }
+
+    .info-card {
+      min-width: 210px;
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .info-card strong {
+      display: inline-block;
+      width: 72px;
+      color: #5c6d7e;
+    }
+
+    .pass {
+      color: #1e7145;
+      font-weight: 800;
+    }
+
+    .fail {
+      color: #c0392b;
+      font-weight: 800;
+    }
   </style>
-
 </head>
 <body>
-  <button id ="start-Backend-btn" onclick="start_Backend()">주행 시작</button>
-  <button id ="stop-Backend-btn" onclick="stop_Backend()">주행 종료</button>
-  <button id ="show-stop-btn" onclick="currentLoopOnOff(false)">시각화 일시 정지</button>
-  <button id ="show-start-btn" onclick="currentLoopOnOff(true)">시각화 다시 시작</button>
-  <button id ="save-btn">레포트 저장</button>
-  <div id ="map"></div>
-  <script src="https://upkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="/static/js/map.js"></script>
+  <div id="toolbar">
+    <label for="drive-mode">모드</label>
+    <select id="drive-mode">
+      <option value="replay" selected>테스트 주행</option>
+      <option value="live">실시간 검증</option>
+    </select>
+    <button onclick="startBackend()">주행 시작</button>
+    <button onclick="stopBackend()">주행 종료</button>
+    <button class="secondary" onclick="currentLoopOnOff(false)">화면 일시정지</button>
+    <button class="secondary" onclick="currentLoopOnOff(true)">화면 다시 시작</button>
+    <button id="save-btn">리포트 저장</button>
+    <span id="mode-status">대기 중</span>
+  </div>
+
+  <div id="map"></div>
 
   <div id="info-panel">
     <div class="info-card">
@@ -46,14 +121,15 @@
     </div>
     <div class="info-card">
       <div><strong>속도</strong><span id="info-speed">-</span></div>
-      <div><strong>헤딩</strong><span id="info-heading">-</span></div>
+      <div><strong>방향</strong><span id="info-heading">-</span></div>
     </div>
-     <div class="info-card result-card">
+    <div class="info-card">
       <div><strong>결과</strong><span id="info-result">-</span></div>
-      <div><strong>이유</strong><span id="info-reason">-</span></div>
+      <div><strong>사유</strong><span id="info-reason">-</span></div>
     </div>
- </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="/static/js/map.js"></script>
 </body>
 </html>
-
-

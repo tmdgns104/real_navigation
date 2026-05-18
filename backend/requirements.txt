@@ -1,3 +1,7 @@
 fastapi
 uvicorn
 pynmea2
+geopy
+folium
+flask
+pymongo
