@@ -1,0 +1,61 @@
+MongoDB
+  └─ driving_db
+     ├─ sessions
+     ├─ raw_nmea
+     ├─ drive_points
+     ├─ failures
+     ├─ reports
+     └─ tracks
+
+
+ session_id
+  cycle
+  timestamp
+
+  - session_id: 주행 시작 1회 단위
+  - cycle: 한 바퀴 단위
+  - timestamp: NMEA UTC 시간
+
+
+
+
+
+
+
+
+
+
+
+
+  python -c "from pymongo import MongoClient; db=MongoClient('mongodb://localhost:27017')['driving_db'];
+  print(db.list_collection_names())"
+
+  컬렉션별 개수 확인:
+
+  python -c "from pymongo import MongoClient; db=MongoClient('mongodb://localhost:27017')['driving_db']; print({name:
+  db[name].count_documents({}) for name in ['sessions','raw_nmea','drive_points','failures','reports']})"
+
+  최근 세션 1개 보기:
+
+  python -c "from pymongo import MongoClient; db=MongoClient('mongodb://localhost:27017')['driving_db'];
+  print(db.sessions.find_one({}, {'_id':0}))"
+
+  최근 FAIL 보기:
+
+  python -c "from pymongo import MongoClient; db=MongoClient('mongodb://localhost:27017')['driving_db'];
+  print(db.failures.find_one({}, {'_id':0}))"
+
+
+
+ python -c "from pymongo import MongoClient; db=MongoClient('mongodb://localhost:27017')['driving_db'];
+  print(db.drive_points.count_documents({'cycle': 1}))"
+
+  2번 cycle 확인:
+
+  python -c "from pymongo import MongoClient; db=MongoClient('mongodb://localhost:27017')['driving_db'];
+  print(db.drive_points.count_documents({'cycle': 2}))"
+
+  특정 세션의 특정 cycle만 확인:
+
+  python -c "from pymongo import MongoClient; db=MongoClient('mongodb://localhost:27017')['driving_db'];
+  print(db.drive_points.count_documents({'session_id':'20260519_045354_340c890c','cycle':1}))"
